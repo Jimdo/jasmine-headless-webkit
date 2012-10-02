@@ -14,7 +14,16 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = "jasmine-headless-webkit"
 
-  s.extensions    = `git ls-files -- ext/**/extconf.rb`.split("\n")
+  precompiled_binary = `which jasmine-webkit-specrunner`.strip
+  if precompiled_binary.empty?
+    s.extensions = `git ls-files -- ext/**/extconf.rb`.split("\n")
+  else
+    FileUtils.ln_s(precompiled_binary, File.expand_path("../ext/jasmine-webkit-specrunner", __FILE__), :force => true)
+    s.post_install_message = <<-MESSAGE
+ !    jasmine-headless-webkit is using the precompiled binary found at '#{precompiled_binary}'.
+  MESSAGE
+  end
+
   s.files         = `git ls-files`.split("\n") + Dir['jasmine/lib/*']
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
